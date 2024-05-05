@@ -21,12 +21,24 @@ This project currently primarily serves as a personal learning project to get to
 It'll probably continue to do so for the foreseaable time. 
 If there's things I've stated about Encore but that can be done, let me know, and I'll fix it :-)
 
-
-TODO: description/screenshot of frontend?
+TODO: add actual web UI?
 
 ![Architecture](./images/encore-flow.png)
 
 ## Run
+
+Configure secrets:
+
+```console
+# required secret to authenticate email receiver
+encore secret set MailAPIToken --type prod,dev,pr,local
+
+# optional secrets for Mailgun integration; email sending will be skipped if left empty
+encore secret set MailgunDomain --type prod,dev,pr,local
+encore secret set MailgunAPIKey --type prod,dev,pr,local
+```
+
+Run `tractore` app using `encore` CLI:
 
 ```console
 encore run
