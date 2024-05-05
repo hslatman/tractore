@@ -1,14 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Uptime</title>
-    <script type="module" crossorigin src="/frontend/assets/index.7205226b.js"></script>
-    <link rel="stylesheet" href="/frontend/assets/index.62171e89.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    
-  </body>
+<html>
+    <script>// The subscriber subscribes to updates
+        // for the https://example.com/foo topic, the bar topic,
+        // and to any topic matching https://example.com/books/{name}
+        const url = new URL('http://localhost:4000/.well-known/mercure');
+        url.searchParams.append('topic', 'mail');
+        
+        const eventSource = new EventSource(url);
+        
+        // The callback will be called every time an update is published
+        eventSource.onmessage = function ({data}) {
+            console.log(data);
+        };</script>
+<body>
+
+
+
+</body>
 </html>
