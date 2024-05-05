@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
-    <script>// The subscriber subscribes to updates
-        // for the https://example.com/foo topic, the bar topic,
-        // and to any topic matching https://example.com/books/{name}
-        const url = new URL('http://localhost:4000/.well-known/mercure');
+    <script>
+        // Determin the Mercure URL to use
+        var windowUrl = window.location;
+        const url = new URL(windowUrl .protocol + "//" + windowUrl.host + "/.well-known/mercure" );
         url.searchParams.append('topic', 'mail');
-        
+    
         const eventSource = new EventSource(url);
         
-        // The callback will be called every time an update is published
+        // The callback will be called every time an update is published on the Mercure SSE stream
         eventSource.onmessage = function ({data}) {
             console.log(data);
         };</script>
