@@ -66,7 +66,6 @@ func main() {
 			} else {
 				slog.Info("sent message")
 			}
-
 		}
 	}()
 
