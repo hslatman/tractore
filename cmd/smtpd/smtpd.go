@@ -15,9 +15,11 @@ import (
 )
 
 var token string
+var environment string
 
 func init() {
 	flag.StringVar(&token, "token", "", "the API token for the mail service")
+	flag.StringVar(&environment, "environment", "local", "the environment to connect to")
 }
 
 func main() {
@@ -27,7 +29,12 @@ func main() {
 		panic(errors.New("'token' is required"))
 	}
 
-	c, err := client.New(client.Local, client.WithAuthToken(token))
+	baseURL := client.Local
+	if environment != "local" {
+		baseURL = client.Environment(environment)
+	}
+
+	c, err := client.New(baseURL, client.WithAuthToken(token))
 	if err != nil {
 		panic(err)
 	}

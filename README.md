@@ -69,6 +69,7 @@ go run cmd/smtpd/smtpd.go
 ## Potential Improvements / Additions 
 
 * Improve the CI/CD of the entire project
+* Add some unit tests
 * Have some better structured scripts / tooling around the code generation, etc.
 * Better email state management; it's pretty basic now.
 * Nicer frontend; it's hacked together now.
