@@ -5,20 +5,30 @@ import Client, { monitor, site } from "./client";
 
 const client = new Client(window.location.origin);
 
+// TODO: improve this
+var windowUrl = window.location;
+const url = new URL(windowUrl .protocol + "//" + windowUrl.host + "/.well-known/mercure" );
+url.searchParams.append('topic', 'mail');
+const sse = new EventSource(url, { withCredentials: true });
+
+// The callback will be called every time an update is published on the Mercure SSE stream
+sse.onmessage = function ({data}) {
+  console.log(data);
+};
+
 function App() {
   return (
-    <></>
-    // <>
-    //   <div className="min-h-full container px-4 mx-auto my-16">
-    //     <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-    //       Uptime Monitoring
-    //     </h2>
+    <>
+      <div className="min-h-full container px-4 mx-auto my-16">
+        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+          Tractore
+        </h2>
 
-    //     <main className="pt-8 pb-16">
-    //       <SiteList />
-    //     </main>
-    //   </div>
-    // </>
+        <main className="pt-8 pb-16">
+          
+        </main>
+      </div>
+    </>
   );
 }
 
