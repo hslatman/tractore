@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,8 +28,6 @@ type Service struct {
 	token string
 }
 
-var singleton *Service
-
 // claims contains Mercure's JWT claims.
 type claims struct {
 	Mercure mercureClaim `json:"mercure"`
@@ -44,10 +41,6 @@ type mercureClaim struct {
 }
 
 func initService() (*Service, error) {
-	if singleton != nil {
-		return singleton, nil
-	}
-
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return nil, xerrs.Internal(fmt.Errorf("failed creating Ed25519 key: %w", err))
@@ -76,12 +69,10 @@ func initService() (*Service, error) {
 		return nil, xerrs.Internal(fmt.Errorf("failed creating mercure hub: %w", err))
 	}
 
-	singleton = &Service{
+	return &Service{
 		hub:   hub,
 		token: signed,
-	}
-
-	return singleton, nil
+	}, nil
 }
 
 var secrets struct {
@@ -116,39 +107,23 @@ func (s *Service) Serve(w http.ResponseWriter, req *http.Request) {
 }
 
 //encore:api private
-func PublishIncoming(ctx context.Context, m *events.MercureMessage) error {
-	if singleton == nil {
-		return errors.New("mercure singleton instance not available")
-	}
-
-	return singleton.publish(ctx, m)
+func (s *Service) PublishIncoming(ctx context.Context, m *events.MercureMessage) error {
+	return s.publish(ctx, m)
 }
 
 //encore:api private
-func PublishOutgoing(ctx context.Context, m *events.MercureMessage) error {
-	if singleton == nil {
-		return errors.New("mercure singleton instance not available")
-	}
-
-	return singleton.publish(ctx, m)
+func (s *Service) PublishOutgoing(ctx context.Context, m *events.MercureMessage) error {
+	return s.publish(ctx, m)
 }
 
 //encore:api private
-func PublishSent(ctx context.Context, m *events.MercureMessage) error {
-	if singleton == nil {
-		return errors.New("mercure singleton instance not available")
-	}
-
-	return singleton.publish(ctx, m)
+func (s *Service) PublishSent(ctx context.Context, m *events.MercureMessage) error {
+	return s.publish(ctx, m)
 }
 
 //encore:api private
-func PublishTrack(ctx context.Context, m *events.MercureMessage) error {
-	if singleton == nil {
-		return errors.New("mercure singleton instance not available")
-	}
-
-	return singleton.publish(ctx, m)
+func (s *Service) PublishTrack(ctx context.Context, m *events.MercureMessage) error {
+	return s.publish(ctx, m)
 }
 
 func (s *Service) publish(ctx context.Context, m any) error {
