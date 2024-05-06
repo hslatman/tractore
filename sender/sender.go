@@ -100,7 +100,7 @@ func (s *Service) Send(ctx context.Context, im *events.OutgoingEmail) error {
 
 	EmailsSent.Increment()
 
-	return err
+	return nil
 }
 
 var _ = pubsub.NewSubscription(
