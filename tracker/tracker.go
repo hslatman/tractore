@@ -26,8 +26,9 @@ type TrackResponse struct {
 
 //encore:api public method=GET path=/t
 func (s *Service) Track(ctx context.Context, params *TrackParams) (*TrackResponse, error) {
-	e := &events.TrackEmail{
-		ID: params.ID,
+	e := &events.MercureMessage{
+		ID:    params.ID,
+		State: "tracked",
 	}
 
 	if err := mercure.PublishTrack(ctx, e); err != nil {

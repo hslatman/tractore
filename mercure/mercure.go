@@ -115,7 +115,7 @@ func (s *Service) Serve(w http.ResponseWriter, req *http.Request) {
 }
 
 //encore:api private
-func PublishIncoming(ctx context.Context, m *events.IncomingEmail) error {
+func PublishIncoming(ctx context.Context, m *events.MercureMessage) error {
 	if singleton == nil {
 		return errors.New("mercure singleton instance not available")
 	}
@@ -124,7 +124,7 @@ func PublishIncoming(ctx context.Context, m *events.IncomingEmail) error {
 }
 
 //encore:api private
-func PublishOutgoing(ctx context.Context, m *events.OutgoingEmail) error {
+func PublishOutgoing(ctx context.Context, m *events.MercureMessage) error {
 	if singleton == nil {
 		return errors.New("mercure singleton instance not available")
 	}
@@ -133,7 +133,7 @@ func PublishOutgoing(ctx context.Context, m *events.OutgoingEmail) error {
 }
 
 //encore:api private
-func PublishSent(ctx context.Context, m *events.SentEmail) error {
+func PublishSent(ctx context.Context, m *events.MercureMessage) error {
 	if singleton == nil {
 		return errors.New("mercure singleton instance not available")
 	}
@@ -142,7 +142,7 @@ func PublishSent(ctx context.Context, m *events.SentEmail) error {
 }
 
 //encore:api private
-func PublishTrack(ctx context.Context, m *events.TrackEmail) error {
+func PublishTrack(ctx context.Context, m *events.MercureMessage) error {
 	if singleton == nil {
 		return errors.New("mercure singleton instance not available")
 	}

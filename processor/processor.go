@@ -162,9 +162,13 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 		}
 	}
 
-	// TODO: set some state in the mercure event, so that UI can update it?
-
-	if err := mercure.PublishOutgoing(ctx, e); err != nil {
+	if err := mercure.PublishOutgoing(ctx, &events.MercureMessage{
+		ID:    e.ID,
+		To:    e.To,
+		From:  e.From,
+		State: "processed",
+		Raw:   e.Raw,
+	}); err != nil {
 		return &errs.Error{
 			Code:    errs.Internal,
 			Message: "internal error",

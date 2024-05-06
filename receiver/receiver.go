@@ -135,7 +135,13 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 		}
 	}
 
-	if err := mercure.PublishIncoming(ctx, e); err != nil {
+	if err := mercure.PublishIncoming(ctx, &events.MercureMessage{
+		ID:    m.ID,
+		To:    ir.To,
+		From:  ir.From,
+		State: "received",
+		Raw:   ir.Raw,
+	}); err != nil {
 		return &errs.Error{
 			Code:    errs.Internal,
 			Message: "internal error",

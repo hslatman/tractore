@@ -80,11 +80,12 @@ func (s *Service) Send(ctx context.Context, im *events.OutgoingEmail) error {
 		rlog.Warn("skipped sending mail because Mailgun secrets are not set")
 	}
 
-	e := &events.SentEmail{
-		ID:   im.ID,
-		From: im.From,
-		To:   im.To,
-		Raw:  im.Raw,
+	e := &events.MercureMessage{
+		ID:    im.ID,
+		From:  im.From,
+		To:    im.To,
+		State: "sent",
+		Raw:   im.Raw,
 	}
 
 	if err := mercure.PublishSent(ctx, e); err != nil {
