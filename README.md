@@ -21,9 +21,12 @@ This project currently primarily serves as a personal learning project to get to
 It'll probably continue to do so for the foreseaable time. 
 If there's things I've stated about Encore that are wrong or implemented that can be done differently, let me know, and I'll fix it :-)
 
-TODO: add actual web UI?
-
 ![Architecture](./images/encore-flow.png)
+
+The current web UI is heavily based on [Mailpit](https://github.com/axllent/mailpit).
+At this time many of its functionalities don't work.
+
+![Screenshot](./images/screenshot.png)
 
 ## Run
 
