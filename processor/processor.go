@@ -19,6 +19,7 @@ import (
 
 	"encore.app/mercure"
 	"encore.app/pkg/events"
+	"encore.app/pkg/signedurl"
 	"encore.app/pkg/wasm"
 	"encore.app/processor/ent"
 	"encore.app/receiver"
@@ -113,11 +114,21 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 
 	meta := encore.Meta()
 	baseURL := meta.APIBaseURL.String()
-	trackingURL := fmt.Sprintf("%s/t?id=%d", baseURL, im.ID) // TODO: use a protected ID
+	trackingURL := fmt.Sprintf("%s/t?id=%d", baseURL, im.ID)
+	signedTrackingURL, err := signedurl.New(trackingURL)
+	if err != nil {
+		return &errs.Error{
+			Code:    errs.Internal,
+			Message: "internal error",
+			Meta: errs.Metadata{
+				"error": fmt.Errorf("failed to commit: %w", err),
+			},
+		}
+	}
 
-	rlog.Info("embedding tracking pixel", "url", trackingURL)
+	rlog.Info("embedding tracking pixel", "url", trackingURL, "signed_url", signedTrackingURL)
 
-	raw, err := s.wasm.EmbedPixel(m.Raw, trackingURL)
+	raw, err := s.wasm.EmbedPixel(m.Raw, signedTrackingURL)
 	if err != nil {
 		return &errs.Error{
 			Code:    errs.Internal,

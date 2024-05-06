@@ -2,11 +2,15 @@ package tracker
 
 import (
 	"context"
+	"fmt"
 
 	"encore.app/mercure"
 	"encore.app/pkg/events"
+	"encore.app/pkg/signedurl"
+	"encore.dev"
 	"encore.dev/beta/errs"
 	"encore.dev/metrics"
+	"encore.dev/rlog"
 )
 
 var EmailsTracked = metrics.NewCounter[uint64]("emails_tracked", metrics.CounterConfig{})
@@ -16,7 +20,9 @@ type Service struct {
 }
 
 type TrackParams struct {
-	ID int `query:"id"`
+	ID        int    `query:"id"`
+	Signature string `query:"signature"`
+	Expiry    string `query:"expiry"`
 }
 
 type TrackResponse struct {
@@ -26,8 +32,33 @@ type TrackResponse struct {
 
 //encore:api public method=GET path=/t
 func (s *Service) Track(ctx context.Context, params *TrackParams) (*TrackResponse, error) {
+	id := params.ID
+	signature := params.Signature
+	expiry := params.Expiry
+
+	rlog.Info("tracking request", "signature", signature)
+
+	// always require a signature
+	if signature == "" {
+		return nil, &errs.Error{
+			Code:    errs.InvalidArgument,
+			Message: "signature missing",
+		}
+	}
+
+	baseURL := encore.Meta().APIBaseURL.String()
+	reconstructedURL := fmt.Sprintf("%s/t?id=%d&signature=%s&expiry=%s", baseURL, id, signature, expiry)
+
+	if err := signedurl.Verify(reconstructedURL); err != nil {
+		rlog.Debug("invalid signature", "signature", signature, "url", reconstructedURL)
+		return nil, &errs.Error{
+			Code:    errs.InvalidArgument,
+			Message: "invalid signature",
+		}
+	}
+
 	e := &events.MercureMessage{
-		ID:    params.ID,
+		ID:    id,
 		State: "tracked",
 	}
 

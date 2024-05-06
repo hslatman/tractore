@@ -40,6 +40,9 @@ encore secret set MailgunAPIKey --type prod,dev,pr,local
 # secrets to authenticate the frontend and (raw) public Mercure endpoint
 encore secret set MercurePassword --type prod,dev,pr,local
 encore secret set MercureUsername --type prod,dev,pr,local
+
+# secret used to sign the tracking URL
+encore secret set SignedURLSecret  --type prod,dev,pr,local
 ```
 
 Run `tractore` app using `encore` CLI:
@@ -90,6 +93,7 @@ go run cmd/smtpd/smtpd.go
 * Better email state management; it's pretty basic now.
 * Ensure Mercure subscribers are authenticated using a token instead of HTTP basic auth.
 * Nicer frontend; it's currently just a `console.log`, basically.
+* Reusable / generic Ent transactional outbox persister
 * OIDC login and user management 
     * Currently there's no multitenancy support, and there's support for only a single user and access token. It would be nice to support multiple users with their own credentials.
 * Improve authorization implementation

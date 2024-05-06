@@ -12,6 +12,7 @@ require (
 	github.com/extism/go-sdk v1.2.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/jhillyerd/enmime v1.2.0
+	github.com/leg100/surl v0.0.6
 	github.com/mailgun/mailgun-go/v4 v4.12.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/net v0.24.0
@@ -46,6 +47,7 @@ require (
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
+	github.com/itchyny/base58-go v0.2.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
 	github.com/jackc/pgx/v5 v5.5.5 // indirect
