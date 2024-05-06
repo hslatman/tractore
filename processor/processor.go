@@ -113,7 +113,7 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 
 	meta := encore.Meta()
 	baseURL := meta.APIBaseURL.String()
-	trackingURL := fmt.Sprintf("%s/t?id=%d", baseURL, im.ID)
+	trackingURL := fmt.Sprintf("%s/t?id=%d", baseURL, im.ID) // TODO: use a protected ID
 
 	rlog.Info("embedding tracking pixel", "url", trackingURL)
 

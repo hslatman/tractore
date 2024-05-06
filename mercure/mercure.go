@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -62,7 +64,7 @@ func initService() (*Service, error) {
 	}
 
 	hub, err := mercure.NewHub(
-		mercure.WithAnonymous(), // TODO: maybe only let authorized users subscribe
+		mercure.WithAnonymous(), // TODO: maybe only let authorized users subscribe, after removing HTTP basic auth
 		mercure.WithDebug(),
 		mercure.WithDemo(),
 		mercure.WithPublisherJWTKeyFunc(func(_ *jwt.Token) (interface{}, error) {
@@ -81,8 +83,34 @@ func initService() (*Service, error) {
 	return singleton, nil
 }
 
+var secrets struct {
+	MercureUsername string // the Mercure username
+	MercurePassword string // the Mercure password
+}
+
 //encore:api public raw path=/.well-known/mercure
 func (s *Service) Serve(w http.ResponseWriter, req *http.Request) {
+	username, password, ok := req.BasicAuth()
+	if !ok {
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	usernameHash := sha256.Sum256([]byte(username))
+	passwordHash := sha256.Sum256([]byte(password))
+	expectedUsernameHash := sha256.Sum256([]byte(secrets.MercureUsername))
+	expectedPasswordHash := sha256.Sum256([]byte(secrets.MercurePassword))
+
+	usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
+	passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
+
+	if !usernameMatch || !passwordMatch {
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	s.hub.ServeHTTP(w, req)
 }
 
