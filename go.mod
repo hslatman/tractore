@@ -14,6 +14,7 @@ require (
 	github.com/jhillyerd/enmime v1.2.0
 	github.com/leg100/surl v0.0.6
 	github.com/mailgun/mailgun-go/v4 v4.12.0
+	github.com/r3labs/sse/v2 v2.10.0
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/net v0.24.0
 	x.encore.dev/infra v0.1.0
@@ -94,6 +95,7 @@ require (
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
+	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
