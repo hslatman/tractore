@@ -80,7 +80,7 @@ go run cmd/smtpd/smtpd.go
 * Return binary responses from an Encore API.
     * At the moment no actual tracking pixel is returned, but the behavior is approximated by returning `application/octet-stream` as the content type. It would be nicer if we could return the actual binary response for an image instead. If this is needed, one has to define a raw API endpoint instead.
 * Have some way to provide a relationship between services that are not automatically inferred.
-    * In this application the `frontend` relies on a public, raw endpoint defined in the `mercure` service. It would be nice if this could be shown in the application dependency diagram. If the relationship can't be inferred automatically, a workaround might be to define it manually.
+    * In this application the `frontend` relies on a public, raw endpoint defined in the `mercure` service. It would be nice if this could be shown in the application dependency diagram. The current workaround is to define dummy endpoints with the right relationship.
 * Support mTLS authentication, and do something with it in the app?
     * Haven't tried doing this using a raw endpoint yet, so maybe something can already be done, but it'll need some custom logic at least.
 * Offer some type of asynchronous job control

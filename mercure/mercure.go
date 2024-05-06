@@ -18,6 +18,7 @@ import (
 	"github.com/dunglas/mercure"
 	"github.com/golang-jwt/jwt/v5"
 
+	"encore.app/frontend"
 	"encore.app/pkg/events"
 	"encore.app/pkg/xerrs"
 )
@@ -104,6 +105,16 @@ func (s *Service) Serve(w http.ResponseWriter, req *http.Request) {
 	}
 
 	s.hub.ServeHTTP(w, req)
+}
+
+// Dummy exists to draw an arrow from mercure to the
+// frontend. In reality the frontend connects to the
+// raw Serve endpoint of mercure to subscribe to a
+// Server-Sent Events stream, but this relationship
+// isn't automatically inferred by Encore.
+func (s *Service) Dummy(context.Context) error {
+	frontend.Dummy(context.Background())
+	return nil
 }
 
 //encore:api private

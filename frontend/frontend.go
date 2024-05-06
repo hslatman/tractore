@@ -4,6 +4,7 @@ package frontend
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"crypto/sha256"
 	"crypto/subtle"
 	"embed"
@@ -28,6 +29,9 @@ var secrets struct {
 	MercureUsername string // the Mercure username
 	MercurePassword string // the Mercure password
 }
+
+//encore:api private
+func Dummy(context.Context) error { return nil }
 
 // Serve serves the frontend for development using a raw endpoint.
 // Learn more: https://encore.dev/docs/primitives/services-and-apis#raw-endpoints
