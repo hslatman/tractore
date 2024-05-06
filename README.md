@@ -19,7 +19,7 @@ Extism provides application customization and extension through executing WebAss
 
 This project currently primarily serves as a personal learning project to get to know Encore and to evaluate if it's something I'll be using in the future.
 It'll probably continue to do so for the foreseaable time. 
-If there's things I've stated about Encore but that can be done, let me know, and I'll fix it :-)
+If there's things I've stated about Encore that are wrong or implemented that can be done differently, let me know, and I'll fix it :-)
 
 TODO: add actual web UI?
 
@@ -87,8 +87,6 @@ go run cmd/smtpd/smtpd.go
 
 ## Potential Improvements / Additions 
 
-* Improve the CI/CD of the entire project
-* Add some unit tests
 * Have some better structured scripts / tooling around the code generation, etc.
 * Better email state management; it's pretty basic now.
 * Ensure Mercure subscribers are authenticated using a token instead of HTTP basic auth.

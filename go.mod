@@ -11,6 +11,7 @@ require (
 	github.com/extism/go-pdk v1.0.2
 	github.com/extism/go-sdk v1.2.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/gorilla/mux v1.8.1
 	github.com/jhillyerd/enmime v1.2.0
 	github.com/leg100/surl v0.0.6
 	github.com/mailgun/mailgun-go/v4 v4.12.0
@@ -44,7 +45,6 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect

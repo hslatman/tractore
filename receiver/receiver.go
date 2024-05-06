@@ -1,11 +1,16 @@
 package receiver
 
 import (
+	"bytes"
 	"context"
 	"crypto/subtle"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/mail"
+	"strconv"
+	"strings"
 	"time"
 
 	"encore.dev/beta/auth"
@@ -15,6 +20,7 @@ import (
 	"encore.dev/storage/sqldb"
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/jhillyerd/enmime"
 	"x.encore.dev/infra/pubsub/outbox"
 
 	"encore.app/mercure"
@@ -105,12 +111,49 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 		return xerrs.Internal(fmt.Errorf("failed committing transaction: %w", err))
 	}
 
+	b, err := base64.StdEncoding.DecodeString(ir.Raw)
+	if err != nil {
+		return xerrs.Internal(fmt.Errorf("failed to decode raw mail: %w", err))
+	}
+	env, err := enmime.ReadEnvelope(bytes.NewBuffer(b))
+	if err != nil {
+		return xerrs.Internal(fmt.Errorf("failed to read envelope: %w", err))
+	}
+	date, err := env.Date()
+	if err != nil {
+		return xerrs.Internal(fmt.Errorf("failed to read envelope: %w", err))
+	}
+
+	var from *mail.Address
+	fromData := addressToSlice(env, "From")
+	if len(fromData) > 0 {
+		from = fromData[0]
+	} else if env.GetHeader("From") != "" {
+		from = &mail.Address{Name: env.GetHeader("From")}
+	}
+	messageID := strings.Trim(env.GetHeader("Message-ID"), "<>")
+
 	if err := mercure.PublishIncoming(ctx, &events.MercureMessage{
 		ID:    m.ID,
 		To:    ir.To,
 		From:  ir.From,
 		State: "received",
 		Raw:   ir.Raw,
+		Data: events.Data{
+			ID:        strconv.Itoa(m.ID),
+			MessageID: messageID,
+			From:      from,
+			To:        addressToSlice(env, "To"),
+			Cc:        addressToSlice(env, "Cc"),
+			Bcc:       addressToSlice(env, "Bcc"),
+			ReplyTo:   addressToSlice(env, "Reply-To"),
+			Date:      time.UnixMilli(date.UnixMilli()),
+			Subject:   env.GetHeader("Subject"),
+			Text:      env.Text,
+			HTML:      env.HTML,
+			Tags:      []string{"tractore"},
+			Size:      len(b),
+		},
 	}); err != nil {
 		return xerrs.Internal(fmt.Errorf("failed publishing to Mercure: %w", err))
 	}
@@ -118,6 +161,16 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 	EmailsReceived.Increment()
 
 	return nil
+}
+
+// Return a header field as a []*mail.Address, or "null" is not found/empty
+func addressToSlice(env *enmime.Envelope, key string) []*mail.Address {
+	data, err := env.AddressList(key)
+	if err != nil || data == nil {
+		return []*mail.Address{}
+	}
+
+	return data
 }
 
 var secrets struct {
