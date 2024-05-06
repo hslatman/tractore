@@ -69,7 +69,7 @@ export default {
 	<div class="navbar navbar-expand-lg navbar-dark row flex-shrink-0 bg-primary text-white">
 		<div class="col-xl-2 col-md-3 col-auto pe-0">
 			<RouterLink to="/" class="navbar-brand text-white me-0" @click="pagination.start = 0">
-				<img :src="resolve('/mailpit.svg')" alt="tractore">
+				<img :src="resolve('/mailpit.svg')" alt="Tractore">
 				<span class="ms-2 d-none d-sm-inline">Tractore</span>
 			</RouterLink>
 		</div>
@@ -90,7 +90,7 @@ export default {
 	<div class="offcanvas-md offcanvas-start d-md-none" data-bs-scroll="true" tabindex="-1" id="offcanvas"
 		aria-labelledby="offcanvasLabel">
 		<div class="offcanvas-header">
-			<h5 class="offcanvas-title" id="offcanvasLabel">Mailpit</h5>
+			<h5 class="offcanvas-title" id="offcanvasLabel">Tractore</h5>
 			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvas"
 				aria-label="Close"></button>
 		</div>
