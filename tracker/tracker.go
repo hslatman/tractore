@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"encore.app/mercure"
-	"encore.app/pkg/events"
-	"encore.app/pkg/signedurl"
 	"encore.dev"
 	"encore.dev/beta/errs"
 	"encore.dev/metrics"
 	"encore.dev/rlog"
+
+	"encore.app/mercure"
+	"encore.app/pkg/events"
+	"encore.app/pkg/signedurl"
+	"encore.app/pkg/xerrs"
 )
 
 var EmailsTracked = metrics.NewCounter[uint64]("emails_tracked", metrics.CounterConfig{})
@@ -63,13 +65,7 @@ func (s *Service) Track(ctx context.Context, params *TrackParams) (*TrackRespons
 	}
 
 	if err := mercure.PublishTrack(ctx, e); err != nil {
-		return nil, &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": err,
-			},
-		}
+		return nil, xerrs.Internal(fmt.Errorf("failed publishing to Mercure: %w", err))
 	}
 
 	EmailsTracked.Increment()

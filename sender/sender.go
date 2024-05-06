@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"encore.dev/beta/errs"
 	"encore.dev/metrics"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
@@ -15,6 +14,7 @@ import (
 
 	"encore.app/mercure"
 	"encore.app/pkg/events"
+	"encore.app/pkg/xerrs"
 	"encore.app/processor"
 )
 
@@ -29,28 +29,16 @@ var secrets struct {
 	MailgunAPIKey string // the Mailgun API key
 }
 
+// Send sends an email using Mailgun
 func (s *Service) Send(ctx context.Context, im *events.OutgoingEmail) error {
-	// Parse message body with enmime.
 	raw, err := base64.StdEncoding.DecodeString(im.Raw)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to decode raw mail: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to decode raw mail: %w", err))
 	}
 
 	env, err := enmime.ReadEnvelope(bytes.NewBuffer(raw))
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to read envelope: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to read envelope: %w", err))
 	}
 
 	subject := env.GetHeader("Subject")
@@ -67,13 +55,7 @@ func (s *Service) Send(ctx context.Context, im *events.OutgoingEmail) error {
 		m.SetHtml(env.HTML)
 		_, id, err := mg.Send(ctx, m)
 		if err != nil {
-			return &errs.Error{
-				Code:    errs.Internal,
-				Message: "internal error",
-				Meta: errs.Metadata{
-					"error": fmt.Errorf("failed to send email: %w", err),
-				},
-			}
+			return xerrs.Internal(fmt.Errorf("failed to send email: %w", err))
 		}
 		rlog.Debug("sent email", "to", im.To, "from", im.From, "mailgun_id", id)
 	} else {
@@ -89,13 +71,7 @@ func (s *Service) Send(ctx context.Context, im *events.OutgoingEmail) error {
 	}
 
 	if err := mercure.PublishSent(ctx, e); err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": err,
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed publishing to Mercure: %w", err))
 	}
 
 	EmailsSent.Increment()

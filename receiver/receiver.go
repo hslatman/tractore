@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"encore.dev/beta/auth"
-	"encore.dev/beta/errs"
 	"encore.dev/metrics"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
@@ -20,6 +19,7 @@ import (
 
 	"encore.app/mercure"
 	"encore.app/pkg/events"
+	"encore.app/pkg/xerrs"
 	"encore.app/receiver/ent"
 )
 
@@ -65,13 +65,7 @@ type IngestRequest struct {
 func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 	tx, err := s.ent.BeginTx(ctx, nil)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": err,
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed starting DB transaction: %w", err))
 	}
 	defer tx.Rollback()
 
@@ -82,13 +76,7 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 		SetRaw([]byte(ir.Raw)).
 		Save(ctx)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to save incoming mail: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to save incoming mail: %w", err))
 	}
 
 	e := &events.IncomingEmail{
@@ -100,13 +88,7 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 
 	eb, err := json.Marshal(e)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": err,
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed marshaling JSON: %w", err))
 	}
 
 	_, err = tx.Outbox.
@@ -116,23 +98,11 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 		SetData(eb).
 		Save(ctx)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": err,
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed creating outbox item: %w", err))
 	}
 
 	if err := tx.Commit(); err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": err,
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed committing transaction: %w", err))
 	}
 
 	if err := mercure.PublishIncoming(ctx, &events.MercureMessage{
@@ -142,13 +112,7 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 		State: "received",
 		Raw:   ir.Raw,
 	}); err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": err,
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed publishing to Mercure: %w", err))
 	}
 
 	EmailsReceived.Increment()

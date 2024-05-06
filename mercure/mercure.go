@@ -20,6 +20,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"encore.app/pkg/events"
+	"encore.app/pkg/xerrs"
 )
 
 //encore:service
@@ -49,7 +50,7 @@ func initService() (*Service, error) {
 
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating Ed25519 key: %w", err)
+		return nil, xerrs.Internal(fmt.Errorf("failed creating Ed25519 key: %w", err))
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims{
@@ -60,7 +61,7 @@ func initService() (*Service, error) {
 
 	signed, err := token.SignedString(priv)
 	if err != nil {
-		return nil, fmt.Errorf("failed signing token: %w", err)
+		return nil, xerrs.Internal(fmt.Errorf("failed signing token: %w", err))
 	}
 
 	hub, err := mercure.NewHub(
@@ -72,7 +73,7 @@ func initService() (*Service, error) {
 		}),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating mercure hub: %w", err)
+		return nil, xerrs.Internal(fmt.Errorf("failed creating mercure hub: %w", err))
 	}
 
 	singleton = &Service{
@@ -154,7 +155,7 @@ func (s *Service) publish(ctx context.Context, m any) error {
 	// TODO: filter out which requests to serve to whom? E.g. only to to/from certain user/email topic?
 	b, err := json.Marshal(m)
 	if err != nil {
-		return fmt.Errorf("failed marshaling email: %w", err)
+		return xerrs.Internal(fmt.Errorf("failed marshaling email: %w", err))
 	}
 
 	data := url.Values{}
@@ -164,8 +165,9 @@ func (s *Service) publish(ctx context.Context, m any) error {
 
 	req, err := http.NewRequestWithContext(ctx, "POST", "/.well-known/mercure", strings.NewReader(enc))
 	if err != nil {
-		return fmt.Errorf("failed creating request: %w", err)
+		return xerrs.Internal(fmt.Errorf("failed creating request: %w", err))
 	}
+
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.token))
 
@@ -178,7 +180,7 @@ func (s *Service) publish(ctx context.Context, m any) error {
 	if rw.Code >= 300 {
 		b, _ = io.ReadAll(rw.Body)
 		rlog.Error("failed sending message", "error", string(b))
-		return fmt.Errorf("publishing failed with code %d", rw.Code)
+		return xerrs.Internal(fmt.Errorf("publishing failed with code %d", rw.Code))
 	}
 
 	rlog.Info("finished publish", "code", rw.Code)

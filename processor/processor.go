@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"encore.dev"
-	"encore.dev/beta/errs"
 	"encore.dev/metrics"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
@@ -21,6 +20,7 @@ import (
 	"encore.app/pkg/events"
 	"encore.app/pkg/signedurl"
 	"encore.app/pkg/wasm"
+	"encore.app/pkg/xerrs"
 	"encore.app/processor/ent"
 	"encore.app/receiver"
 )
@@ -64,25 +64,13 @@ func initService() (*Service, error) {
 func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 	tx, err := s.ent.BeginTx(ctx, nil)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to start transaction: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to start transaction: %w", err))
 	}
 	defer tx.Rollback()
 
 	b, err := base64.StdEncoding.DecodeString(im.Raw)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to decode raw mail: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to decode raw mail: %w", err))
 	}
 
 	m, err := tx.Mail.
@@ -93,23 +81,11 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 		SetIncomingMailID(im.ID).
 		Save(ctx)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to save incoming mail: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to save incoming mail: %w", err))
 	}
 
 	if err := tx.Commit(); err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to commit: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to commit: %w", err))
 	}
 
 	meta := encore.Meta()
@@ -117,26 +93,14 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 	trackingURL := fmt.Sprintf("%s/t?id=%d", baseURL, im.ID)
 	signedTrackingURL, err := signedurl.New(trackingURL)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to commit: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to commit: %w", err))
 	}
 
 	rlog.Info("embedding tracking pixel", "url", trackingURL, "signed_url", signedTrackingURL)
 
 	raw, err := s.wasm.EmbedPixel(m.Raw, signedTrackingURL)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed embedding pixel: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed embedding pixel: %w", err))
 	}
 
 	e := &events.OutgoingEmail{
@@ -148,13 +112,7 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 
 	eb, err := json.Marshal(e)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to marshal outgoing email: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to marshal outgoing email: %w", err))
 	}
 
 	_, err = s.ent.Outbox.
@@ -164,13 +122,7 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 		SetData(eb).
 		Save(ctx)
 	if err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed to create outbox entry for outgoing email: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed to create outbox entry for outgoing email: %w", err))
 	}
 
 	if err := mercure.PublishOutgoing(ctx, &events.MercureMessage{
@@ -180,13 +132,7 @@ func (s *Service) Process(ctx context.Context, im *events.IncomingEmail) error {
 		State: "processed",
 		Raw:   e.Raw,
 	}); err != nil {
-		return &errs.Error{
-			Code:    errs.Internal,
-			Message: "internal error",
-			Meta: errs.Metadata{
-				"error": fmt.Errorf("failed publishing update to mercure: %w", err),
-			},
-		}
+		return xerrs.Internal(fmt.Errorf("failed publishing update to mercure: %w", err))
 	}
 
 	EmailsProcessed.Increment()
