@@ -1,3 +1,4 @@
+// Service mercure is used to update subscribers about the state of emails
 package mercure
 
 import (

@@ -1,3 +1,4 @@
+// Service receiver receives emails
 package receiver
 
 import (

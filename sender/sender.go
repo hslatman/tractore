@@ -1,3 +1,4 @@
+// Service sender sends processed emails
 package sender
 
 import (

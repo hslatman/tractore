@@ -1,3 +1,4 @@
+// Service processor processes emails (i.e. adds a tracking pixel)
 package processor
 
 import (

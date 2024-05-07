@@ -1,3 +1,4 @@
+// Service tracker tracks email opens using signed URL verification
 package tracker
 
 import (
