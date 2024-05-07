@@ -63,7 +63,7 @@ export default {
 	<div class="offcanvas-md offcanvas-start d-md-none" data-bs-scroll="true" tabindex="-1" id="offcanvas"
 		aria-labelledby="offcanvasLabel">
 		<div class="offcanvas-header">
-			<h5 class="offcanvas-title" id="offcanvasLabel">Mailpit</h5>
+			<h5 class="offcanvas-title" id="offcanvasLabel">Tractore</h5>
 			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#offcanvas"
 				aria-label="Close"></button>
 		</div>

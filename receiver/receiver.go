@@ -152,8 +152,9 @@ func (s *Service) Ingest(ctx context.Context, ir *IngestRequest) error {
 			Subject:   env.GetHeader("Subject"),
 			Text:      env.Text,
 			HTML:      env.HTML,
-			Tags:      []string{"tractore"},
+			Tags:      []string{"received"},
 			Size:      len(b),
+			Created:   time.Now(),
 		},
 	}); err != nil {
 		return xerrs.Internal(fmt.Errorf("failed publishing to Mercure: %w", err))

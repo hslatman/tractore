@@ -39,6 +39,8 @@ type Data struct {
 	// Inline []Attachment
 	// // Message attachments
 	// Attachments []Attachment
+	// Created time
+	Created time.Time
 }
 
 type MercureMessage struct {

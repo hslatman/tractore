@@ -68,9 +68,19 @@ export default {
 						}
 					}
 
+					// update known tags
 					for (let i in response.Data.Tags) {
 						if (mailbox.tags.indexOf(response.Data.Tags[i]) < 0) {
 							mailbox.tags.push(response.Data.Tags[i])
+							mailbox.tags.sort()
+						}
+					}
+
+					// update known tags
+					let stateTags = ["received", "processed", "sent", "tracked"]
+					for (let i in stateTags) {
+						if (mailbox.tags.indexOf(stateTags[i]) < 0) {
+							mailbox.tags.push(stateTags[i])
 							mailbox.tags.sort()
 						}
 					}
@@ -85,6 +95,16 @@ export default {
 						window.setTimeout(() => { self.pauseNotifications = false }, 2000)
 					}
 				} else if (response.state  == "processed") {
+					var message = null
+					mailbox.messages.forEach(function(m){
+						if (m.ID == response.mail_id){
+							message = m;
+							if (message.Tags.indexOf("processed") < 0) {
+								message.Tags.push("processed")
+							}
+						}
+					});
+
 					// send notifications
 					if (!self.pauseNotifications) {
 						self.pauseNotifications = true
@@ -95,6 +115,16 @@ export default {
 						window.setTimeout(() => { self.pauseNotifications = false }, 2000)
 					}
 				} else if (response.state == "sent" ) {
+					var message = null
+					mailbox.messages.forEach(function(m){
+						if (m.ID == response.mail_id){
+							message = m;
+							if (message.Tags.indexOf("sent") < 0) {
+								message.Tags.push("sent")
+							}
+						}
+					});
+
 					// send notifications
 					if (!self.pauseNotifications) {
 						self.pauseNotifications = true
@@ -105,6 +135,16 @@ export default {
 						window.setTimeout(() => { self.pauseNotifications = false }, 2000)
 					}
 				} else if (response.state == "tracked") {
+					var message = null
+					mailbox.messages.forEach(function(m){
+						if (m.ID == response.mail_id){
+							message = m;
+							if (message.Tags.indexOf("tracked") < 0) {
+								message.Tags.push("tracked")
+							}
+						}
+					});
+
 					// send notifications
 					if (!self.pauseNotifications) {
 						self.pauseNotifications = true
